@@ -1,32 +1,21 @@
 import numpy as np
 import random
-import csv
-
 
 class Perceptron:
-    """
-    Implementa o Perceptron utilizando o Delta como forma de calcular o erro
-    """
-    w = None
-    w0 = None
-    csv_train_path = None
-    x = []
-    y = []
-    population_size = 100
-    dim = 3
-    generations = 100
+    
+    def __init__(self):
+        self.w = None
+        self.w0 = None
+        self.x = []
+        self.y = []
+        self.population_size = 100
+        self.dim = 3
+        self.generations = 100
 
-    def __init__(self, csv_train_path):
-        """
-        csv_train_path indica o caminho onde o arquivo CSV está
-        """
-        self.csv_train_path = csv_train_path
-        self.read_csv()
-        self.fit()
-
-    def fit(self):
+    def fit(self, x, y):
         # quantidade de exemplos
-        tamanho_x = len(self.x)
+        tamanho_x = len(x)
+        self.y = y
 
         self.create_random_w()
 
@@ -119,24 +108,3 @@ class Perceptron:
 
     def aplica_funcao_ativacao(self, net):
         return 1/(1 + np.e ** -net)
-
-    def read_csv(self):
-        """
-        Transforma os dados de um arquivo CSV na lista de exemplos x (com 3 features cada exemplo)
-        e na lista y que diz qual a classe o exemplo pertence
-        So funciona com exemplos que tem 3 features
-        """
-        with open(self.csv_train_path, 'r') as csv_file:
-            exemples = csv.reader(csv_file, delimiter=';')
-
-            for row in exemples:
-                xi = []
-                xi.append(float(row[0]))
-                xi.append(float(row[1]))
-                xi.append(float(row[2]))
-                self.y.append(row[3])
-                self.x.append(xi)
-
-p = Perceptron('dataset.csv')
-print(p.w)
-print(p.w0)
