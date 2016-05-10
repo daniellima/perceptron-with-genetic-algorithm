@@ -4,7 +4,8 @@ from DatasetLoader import DatasetLoader
 dataset = DatasetLoader('resources/dataset.csv')
 
 p = Perceptron()
-print(p.create_initial_population())
+pop = p.create_initial_population();
+print(p.sort_by_best(pop, dataset.x, dataset.y))
 
 #p.fit(dataset.x, dataset.y)
 

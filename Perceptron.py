@@ -4,8 +4,8 @@ import random
 class Perceptron:
     
     def __init__(self, 
-                 population_size = 100,
-                 number_of_generations = 100,
+                 population_size = 5,
+                 number_of_generations = 10,
                  mutation_chance = 0.1,
                  crossover_chance = 0.8,
                  number_of_features = 3
@@ -19,37 +19,39 @@ class Perceptron:
         
         self.number_of_features = number_of_features
 
-    def sort_by_best(self, population):
-        pass
+    def sort_by_best(self, population, x, y):
+        pop_with_fit = [(ind, self.fitness_function(ind, x, y)) for ind in population]
+        sorted_population = sorted(pop_with_fit, key=lambda ind_fit: ind_fit[1])
+        
+        z = zip(*sorted_population)
+        return next(z), next(z) # list de individuos e lista de suas fits
 
     def fit(self, x, y):
         population = self.create_initial_population()
         
         for generation in range(self.number_of_generations):
-            self.select(population)
-            self.crossover(population)
-            self.mutate(population)
+            population = self.select(population, x, y)
+            #self.crossover(population)
+            #self.mutate(population)
             
-            best_individual = self.sort_by_best(population)[0]
-            self.w0 = best_individual[0]
-            self.w = best_individual[1:]
+            #best_individual = self.sort_by_best(population)[0]
+            #self.w0 = best_individual[0]
+            #self.w = best_individual[1:]
 
-    def select(self, population):
-        pop = list(population)
-        pop.sort(key=lambda ind: self.fitness_function(ind))
-        fits = [self.fitness_function(i) for i in pop]
+    def select(self, population, x, y):
+        sorted_population, fits = self.sort_by_best(population, x, y)
 
         total = 0
-        for i in range(len(fits)):
+        for i in range(len(sorted_population)):
             total += fits[i]
             fits[i] = total
 
         selected = []
-        for i in range(len(population)-1):
-            n = random.randint(1, total)
+        for i in range(len(sorted_population)-1):
+            n = random.uniform(1, total)
             for j in range(len(fits)):
                 if n <= fits[j]:
-                    selected.append(pop[j])
+                    selected.append(sorted_population[j])
                     break
 
         return selected
@@ -83,15 +85,15 @@ class Perceptron:
     
             population[i] = individual
     
-    def fitness_function(self, indv):
+    def fitness_function(self, individual, x, y):
         erro_total = 0
-        for i, example in enumerate(self.x):
-            net = self.calcula_net(example)
-            y_estimado = self.aplica_funcao_ativacao(net)
-            erro = self.calcula_erro(y_estimado, self.y[i])
+        for i, example in enumerate(x):
+            y_estimado = self.evaluate(individual, example)
+            erro = self.calcula_erro(y_estimado, y[i])
             erro_total += erro
-            
-        return 10000-erro_total #gambiarra
+        
+        max_error = len(x) # o erro maximo por exemplo é 1
+        return max_error-erro_total
 
     def create_initial_population(self):
         population = []
@@ -101,11 +103,14 @@ class Perceptron:
             
         return population
 
-    def calcula_erro(self, y_estimado, y):
-        return float(y) - y_estimado
+    def evaluate(self, individual, example):
+        return self.aplica_funcao_ativacao(self.calcula_net(individual, example))
 
-    def calcula_net(self, xi):
-        return np.dot(self.w, xi) + self.w0
+    def calcula_erro(self, y_estimado, y):
+        return abs(float(y) - y_estimado)
+
+    def calcula_net(self, individual, example):
+        return np.dot(individual[1:], example) + individual[0]
 
     def aplica_funcao_ativacao(self, net):
         return 1/(1 + np.e ** -net)
