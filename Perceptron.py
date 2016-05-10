@@ -3,31 +3,36 @@ import random
 
 class Perceptron:
     
-    def __init__(self):
+    def __init__(self, 
+                 population_size = 100,
+                 number_of_generations = 100,
+                 mutation_chance = 0.1,
+                 crossover_chance = 0.8,
+                 number_of_features = 3
+                 ):
         self.w = None
         self.w0 = None
-        self.x = []
-        self.y = []
-        self.population_size = 100
-        self.dim = 3
-        self.generations = 100
+        self.population_size =population_size
+        self.number_of_generations = number_of_generations
+        self.crossover_chance = crossover_chance
+        self.mutation_chance = mutation_chance
+        
+        self.number_of_features = number_of_features
+
+    def sort_by_best(self, population):
+        pass
 
     def fit(self, x, y):
-        # quantidade de exemplos
-        tamanho_x = len(x)
-        self.y = y
-
-        self.create_random_w()
-
         population = self.create_initial_population()
         
-        for generation in range(self.generations):
-            population = self.select(population)
+        for generation in range(self.number_of_generations):
+            self.select(population)
             self.crossover(population)
+            self.mutate(population)
             
-            for i in range(len(population)):
-                population[i] = self.mutation(population[i])
-            
+            best_individual = self.sort_by_best(population)[0]
+            self.w0 = best_individual[0]
+            self.w = best_individual[1:]
 
     def select(self, population):
         pop = list(population)
@@ -66,17 +71,17 @@ class Perceptron:
             population[i] = ind1[0:point] + ind2[point:]
             population[i+1] = ind2[0:point] + ind1[point:]
         
-    def mutation(self, individual, chance = 0.1):
-        if random.random() > chance: # mutation chance
-            return individual
-        mutation_position = random.choice(range(len(individual)))
-        auxiliar_list = list(range(len(individual)))
-        auxiliar_list.reverse()
-        individual[mutation_position] = random.choice(range(auxiliar_list[mutation_position]+1))
-
-        #print("houve mutacao")
-
-        return individual
+    def mutate(self, population):
+        for i in range(len(population)):
+            individual = population[i]
+            if random.random() > self.mutation_chance: # mutation chance
+                return individual
+            mutation_position = random.choice(range(len(individual)))
+            auxiliar_list = list(range(len(individual)))
+            auxiliar_list.reverse()
+            individual[mutation_position] = random.choice(range(auxiliar_list[mutation_position]+1))
+    
+            population[i] = individual
     
     def fitness_function(self, indv):
         erro_total = 0
@@ -88,17 +93,13 @@ class Perceptron:
             
         return 10000-erro_total #gambiarra
 
-    def create_random_w(self):
-        # contruindo o w aleatoriamente
-        w = np.random.rand(1, self.dim)
-        w = w[0]
-        w0 = np.random.rand(1, 1)
-        w0 = w0[0]
-        
-        return [w0] + w
-
     def create_initial_population(self):
-        return [self.create_random_w() for i in range(self.population_size)]
+        population = []
+        for i in range(self.population_size):
+            random_individual = np.random.rand(1, self.number_of_features+1)[0]
+            population.append(random_individual)
+            
+        return population
 
     def calcula_erro(self, y_estimado, y):
         return float(y) - y_estimado
