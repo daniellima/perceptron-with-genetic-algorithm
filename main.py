@@ -28,9 +28,10 @@ p = Perceptron()
 # t, f = p.sort_by_best(pop, dataset.x, dataset.y)
 # print(t)
 # print(f)
-
+# p.maxError = 0
+# print(p.fitness_function([0.46510608158931277, 3.80882174, -1.61348909, -3.81282902], dataset.x, dataset.y))
+# exit()
 p.fit(dataset.x, dataset.y)
+print("W": p.w)
+print("W0:", p.w0)
 
-
-#print(p.w)
-#print(p.w0)

@@ -5,7 +5,7 @@ class Perceptron:
     
     def __init__(self, 
                  population_size = 5,
-                 number_of_generations = 100,
+                 number_of_generations = 20,
                  mutation_chance = 0.5,
                  crossover_chance = 0.8,
                  number_of_features = 3
@@ -29,17 +29,25 @@ class Perceptron:
     def fit(self, x, y):
         population = self.create_initial_population()
         
+        best = 0
+        
         for generation in range(self.number_of_generations):
+            self.maxError = 0
             population = self.select(population, x, y)
             population = self.crossover(population)
             population = self.mutate(population)
             
             pop, fits = self.sort_by_best(population, x, y)
-            print(fits)
-            #self.w0 = pop[0][0]
-            #self.w = pop[0][1:]
+            best = max(best, fits[-1])
+            #print(fits[-1], "(best", best, ")", "Erro Maximo:", self.maxError)
+            self.w0 = pop[-1][0]
+            self.w = pop[-1][1:]
 
     def select(self, population, x, y):
+        # Utiliza o metodo da roleta para selecionar.
+        # E metodo escolhe aleatoriamente quem vai ser selecionado, mas dá mais chance para
+        # quem tem o maior valor (fit)
+        
         sorted_population, fits = self.sort_by_best(population, x, y)
 
         total = 0
@@ -58,6 +66,8 @@ class Perceptron:
         return selected
         
     def crossover(self, population):
+        # anda de dois em dois na população e faz um crossover entre os pares
+        
         new_population = []
         for i in range(0, len(population), 2):
             if i+1 == len(population): #população impar
@@ -80,6 +90,8 @@ class Perceptron:
         return new_population
         
     def mutate(self, population):
+        # Escolhe uma posição e muda o valor dela aleatoriamente entre -5 e 5
+        
         new_population = []
         
         for i in range(len(population)):
@@ -89,7 +101,7 @@ class Perceptron:
                 continue
             
             mutation_position = random.choice(range(len(individual)))
-            individual[mutation_position] = random.random() * 10
+            individual[mutation_position] = random.random()* 10 - 5 # de -5 a 5
     
             new_population.append(individual)
             
@@ -102,7 +114,7 @@ class Perceptron:
             erro = self.calcula_erro(y_estimado, y[i])
             erro_total += erro
         
-        max_error = len(x) # o erro maximo por exemplo é 1
+        max_error = len(x) # o erro maximo para cada exemplo é 1
         return max_error-erro_total
 
     def create_initial_population(self):
@@ -114,13 +126,26 @@ class Perceptron:
         return population
 
     def evaluate(self, individual, example):
-        return self.aplica_funcao_ativacao(self.calcula_net(individual, example))
+        return self.classify(self.aplica_funcao_ativacao(self.calcula_net(individual, example)))
 
     def calcula_erro(self, y_estimado, y):
-        return abs(float(y) - y_estimado)
+        #erro = abs(float(y) - y_estimado)
+        erro = abs(int(y) - y_estimado)
+        self.maxError = max(self.maxError, erro)
+        # if erro is self.maxError:
+        #     print('Y estimado:', y_estimado, 'Classe', float(y))
+        return erro
 
     def calcula_net(self, individual, example):
-        return np.dot(individual[1:], example) + individual[0]
+        self.net = (np.dot(individual[1:], example) + individual[0])
+        self.individual = individual
+        return self.net
 
     def aplica_funcao_ativacao(self, net):
         return 1/(1 + np.float64(np.e) ** -np.float64(net))
+        
+    def classify(self, x):
+        if x > 0.5:
+            return 1
+        else:
+            return 0
