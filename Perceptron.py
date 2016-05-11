@@ -5,7 +5,7 @@ class Perceptron:
     
     def __init__(self, 
                  population_size = 5,
-                 number_of_generations = 20,
+                 number_of_generations = 100,
                  mutation_chance = 0.5,
                  crossover_chance = 0.8,
                  number_of_features = 3
@@ -40,6 +40,7 @@ class Perceptron:
             pop, fits = self.sort_by_best(population, x, y)
             best = max(best, fits[-1])
             #print(fits[-1], "(best", best, ")", "Erro Maximo:", self.maxError)
+            print("[best value now]", fits[-1], "[best value ever]", best)
             self.w0 = pop[-1][0]
             self.w = pop[-1][1:]
 

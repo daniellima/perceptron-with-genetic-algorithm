@@ -32,6 +32,6 @@ p = Perceptron()
 # print(p.fitness_function([0.46510608158931277, 3.80882174, -1.61348909, -3.81282902], dataset.x, dataset.y))
 # exit()
 p.fit(dataset.x, dataset.y)
-print("W": p.w)
+print("W:", p.w)
 print("W0:", p.w0)
 
